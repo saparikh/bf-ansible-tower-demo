@@ -1,0 +1,86 @@
+---
+- name: Create router configuration
+  connection: local
+  hosts: localhost
+  gather_facts: no
+
+
+  vars:
+    demo_snapshot_dir: "./snapshots/snapshot1"
+    demo_cfg_dir: "{{ demo_snapshot_dir }}/configs"
+    tmp_cfg_dir: "{{ demo_base_dir }}/snapshots/tmp"
+
+  tasks:
+    - name: Create temporary directory for config snippets
+      file:
+        path: "{{ tmp_cfg_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Generate new leaf configuration file
+      debug:
+        msg: "Generating leaf config file for {{ hostname }} "
+
+    - name: Retrieve device attributes from SOT
+      include_vars:
+        file: "{{ demo_base_dir }}/inputs/{{ hostname }}.json"
+
+    - name: Set BGP AS variable for template to use
+      set_fact:
+        bgp_as: "{{ BGP_AS }}"
+
+    - name: Create directory for configuration changes
+      file:
+        path: "{{ demo_cfg_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Building beginning of conf file from template
+      template:
+        src: "{{ demo_base_dir }}/templates/system_start.j2"
+        dest: "{{ tmp_cfg_dir }}/1_system_start.cfg"
+
+    - name: Building Loopback interface from template
+      template:
+        src: "{{ demo_base_dir }}/templates/loopback.j2"
+        dest: "{{ tmp_cfg_dir }}/2_loopback.cfg"
+
+    - name: Building Ethernet interfaces from template
+      template:
+        src: "{{ demo_base_dir }}/templates/eth_interface.j2"
+        dest: "{{ tmp_cfg_dir }}/3_eth_interface.cfg"
+
+    - name: Building OSPF configuration from template
+      template:
+        src: "{{ demo_base_dir }}/templates/ospf.j2"
+        dest: "{{ tmp_cfg_dir }}/4_ospf.cfg"
+
+    - name: Building BGP configuration from template
+      template:
+        src: "{{ demo_base_dir }}/templates/bgp.j2"
+        dest: "{{ tmp_cfg_dir }}/5_bgp.cfg"
+
+    - name: Load ACL definition from SOT
+      include_vars:
+        file: "{{ demo_base_dir }}/inputs/acls.json"
+
+    - name: Building ACL configuration from template
+      template:
+        src: "{{ demo_base_dir }}/templates/acl.j2"
+        dest: "{{ tmp_cfg_dir }}/6_acl.cfg"
+      when: acls | length !=0
+
+    - name: Building beginning of conf file from template
+      template:
+        src: "{{ demo_base_dir }}/templates/system_end.j2"
+        dest: "{{ tmp_cfg_dir }}/7_system_end.cfg"
+
+    - name: Assembling full configuration file from the individual snippets
+      assemble:
+        src: "{{ tmp_cfg_dir }}"
+        dest: "{{ demo_cfg_dir }}/{{ hostname }}.cfg"
+
+    - name: Delete temporary directory for config snippets
+      file:
+        path: "{{ tmp_cfg_dir }}"
+        state: absent

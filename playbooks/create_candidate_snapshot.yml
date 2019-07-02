@@ -1,0 +1,25 @@
+---
+- name: Initalize the new snapshot
+  hosts: all
+  gather_facts: no
+  roles:
+    - batfish.base
+  
+  tasks:
+
+  - name: Execute Batfish related tasks in a block that is "delegate_to -> localhost" and "run_once -> true"
+    block:
+
+    - name: Setup connection to Batfish service
+      bf_session:
+        host: "{{ batfish_server }}"
+        name: remote_batfish
+
+    - name: Initialize candidate snapshot
+      bf_init_snapshot:
+        snapshot: "{{ candidate_snapshot }}"
+        network: "{{ bf_network }}"
+        snapshot_data: "{{ snapshot_dir }}"
+        overwrite: true
+    delegate_to: localhost
+    run_once: true
