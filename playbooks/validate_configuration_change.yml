@@ -1,0 +1,48 @@
+---
+- name: Validate configuration change
+  hosts: all
+  gather_facts: no
+  roles:
+    - batfish.base
+
+  tasks:
+
+  - name: Execute Batfish related tasks in a block that is "delegate_to -> localhost" and "run_once -> true"
+    block:
+
+    - name: Setup connection to Batfish service
+      bf_session:
+        host: "{{ batfish_server }}"
+        name: remote_batfish
+
+    - name: Set the snapshot to be validated
+      bf_set_snapshot:
+        network: "{{ bf_network }}"
+        snapshot: "{{ candidate_snapshot }}"
+
+    - name: Validate facts gathered by Batfish
+      bf_validate_facts:
+        expected_facts: fact_validation
+      register: bf_validate
+      ignore_errors: true
+
+    - name: Display Batfish validation result details
+      debug: msg="{{bf_validate}}"
+
+    - name: Validate BGP configuration of network devices
+      bf_assert:
+        assertions:
+          - type: assert_no_incompatible_bgp_sessions
+            name: Confirm that all BGP peers are properly configured
+
+          - type: assert_no_unestablished_bgp_sessions
+            name: Confirm that all compatible BGP peers establish sessions
+      register: bf_assert
+      ignore_errors: true
+
+    - name: Display Batfish validation result details
+      debug: msg="{{bf_assert}}"
+
+
+    delegate_to: localhost
+    run_once: true
