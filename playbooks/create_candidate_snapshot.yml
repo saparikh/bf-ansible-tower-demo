@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: no
   roles:
-    - batfish.base
+    - ../batfish.base
   
   tasks:
 
