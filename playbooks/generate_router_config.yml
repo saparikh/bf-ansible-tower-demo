@@ -61,15 +61,15 @@
         src: "{{ demo_base_dir }}/templates/bgp.j2"
         dest: "{{ tmp_cfg_dir }}/5_bgp.cfg"
 
-    - name: Load ACL definition from SOT
-      include_vars:
-        file: "{{ demo_base_dir }}/inputs/acls.json"
-
-    - name: Building ACL configuration from template
-      template:
-        src: "{{ demo_base_dir }}/templates/acl.j2"
-        dest: "{{ tmp_cfg_dir }}/6_acl.cfg"
-      when: acls | length !=0
+#    - name: Load ACL definition from SOT
+#      include_vars:
+#        file: "{{ demo_base_dir }}/inputs/acls.json"
+#
+#    - name: Building ACL configuration from template
+#      template:
+#        src: "{{ demo_base_dir }}/templates/acl.j2"
+#        dest: "{{ tmp_cfg_dir }}/6_acl.cfg"
+#      when: acls | length !=0
 
     - name: Building beginning of conf file from template
       template:
