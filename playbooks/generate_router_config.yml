@@ -6,7 +6,8 @@
 
 
   vars:
-    demo_snapshot_dir: "./snapshots/snapshot1"
+    demo_base_dir: "../"
+    demo_snapshot_dir: "{{ demo_base_dir }}/snapshots/snapshot1"
     demo_cfg_dir: "{{ demo_snapshot_dir }}/configs"
     tmp_cfg_dir: "{{ demo_base_dir }}/snapshots/tmp"
 
