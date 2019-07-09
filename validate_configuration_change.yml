@@ -22,7 +22,7 @@
 
     - name: Validate facts gathered by Batfish
       bf_validate_facts:
-        expected_facts: fact_validation
+        expected_facts: ./fact_validation
       register: bf_validate
       ignore_errors: true
 
